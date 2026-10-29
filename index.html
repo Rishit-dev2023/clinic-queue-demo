@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clinic Queue (Demo)</title>
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--tx:#17202a;--mut:#667085;--bd:#d9dee5;--ac:#0b7a75;--acx:#fff;--em:#c0392b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:16px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}h1{font-size:20px;margin:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{padding:8px 16px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;cursor:pointer;font-weight:600}.tabs button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;min-width:0}h2{font-size:15px;margin:0 0 10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+.f{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.f .full{grid-column:1/-1}label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{padding:9px 16px;border:0;border-radius:8px;background:var(--ac);color:var(--acx);cursor:pointer;font:inherit;font-weight:700}.btn.sec{background:transparent;color:var(--tx);border:1px solid var(--bd)}.btn:disabled{opacity:.4;cursor:default}
+.q{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}.q li{display:flex;gap:10px;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:8px 10px}.q li.em{border-color:var(--em)}
+.tok{min-width:42px;text-align:center;font-weight:800;background:var(--bg);border-radius:8px;padding:6px 4px}.info{flex:1;min-width:0}.info b,.info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.info span{color:var(--mut);font-size:13px}
+.badge{background:var(--em);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px}.ib{border:1px solid var(--bd);background:transparent;color:var(--tx);border-radius:6px;width:30px;height:30px;cursor:pointer}
+.empty,.mut{color:var(--mut)}.empty{padding:10px 0}.mut{font-size:13px}.big{font-size:22px;font-weight:800;margin:0 0 4px}.hide{display:none}.blk{margin:0 0 14px}
+.pv{background:#fff;color:#000;overflow-x:auto;padding:6px;border:1px solid var(--bd);border-radius:8px;margin:6px 0 10px}.pv table{color:#000}
+.demo{background:var(--ac);color:var(--acx);font-size:12px;padding:3px 10px;border-radius:99px;font-weight:700;margin-left:8px;vertical-align:middle}
+</style></head><body>
+<div id="app" class="wrap">
+<header><h1>🩺 Clinic Queue<span class="demo">DEMO · synthetic data · stored in your browser</span></h1>
+<div class="tabs"><button id="tA" class="on">Attendant</button><button id="tD">Doctor</button><button id="tH">History</button><button id="rs">Reset demo</button></div></header>
+
+<section id="vA" class="grid"><div class="card"><h2>New patient</h2><div class="f" id="form">
+<div class="full"><label>Patient type</label><select id="mode"><option value="adult">Adult</option><option value="child">Child</option></select></div>
+<div><label>Regd. No</label><input id="reg"></div><div><label>Last visit (date)</label><input id="last" type="date"></div>
+<div class="full"><label>Name *</label><input id="name"></div>
+<div><label>Date of birth</label><input id="dob" type="date"></div>
+<div><label>Age (if no DOB)</label><div class="row" style="flex-wrap:nowrap"><input id="age" type="number" min="0" max="120"><select id="au" style="width:auto"><option>years</option><option>months</option></select></div></div>
+<div><label>Sex *</label><select id="gender"><option>M</option><option>F</option><option>Other</option></select></div>
+<div><label>Mobile</label><input id="ph" type="tel"></div><div><label>Religion</label><input id="rel"></div>
+<div class="full"><label>Address</label><input id="addr"></div>
+<div class="full mut">Vitals (BMI and ideal weight are auto-calculated)</div>
+<div><label>Weight (kg)</label><input id="wt" type="number" step="0.1"></div><div><label>Height (cm)</label><input id="ht" type="number" step="0.1"></div>
+<div class="kid hide"><label>Head circum (cm)</label><input id="hc" type="number" step="0.1"></div>
+<div><label>Temp (F)</label><input id="tp" type="number" step="0.1"></div><div><label>Pulse (per min)</label><input id="pulse"></div>
+<div><label>Resp rate (per min)</label><input id="rr"></div><div><label>BP (mm Hg)</label><input id="bp" placeholder="137/85"></div>
+<div class="full mut">SpO2 % : Room Air / With O2</div>
+<div><label>RUL room air</label><input id="rul"></div><div><label>RUL with O2</label><input id="rulo"></div>
+<div><label>LUL room air</label><input id="lul"></div><div><label>LUL with O2</label><input id="lulo"></div>
+<div><label>RLL room air</label><input id="rll"></div><div><label>RLL with O2</label><input id="rllo"></div>
+<div><label>LLL room air</label><input id="lll"></div><div><label>LLL with O2</label><input id="lllo"></div>
+<div><label>Ht of Father (cm)</label><input id="hf"></div><div><label>Ht of Mother (cm)</label><input id="hm"></div>
+<div class="full mut">Vision (e.g. 6/6, 6/9)</div>
+<div><label>Right eye w/o glass</label><input id="re0"></div><div><label>Right eye w glass</label><input id="re1"></div>
+<div><label>Left eye w/o glass</label><input id="le0"></div><div><label>Left eye w glass</label><input id="le1"></div>
+<div class="full row"><label style="margin:0;display:flex;gap:6px;align-items:center;color:var(--tx)"><input id="em" type="checkbox" style="width:auto"> Emergency / priority</label></div>
+</div><div class="row" style="margin-top:12px"><button class="btn" id="add">Add to queue</button><button class="btn sec" id="demo">Load sample patients</button><span class="mut" id="msg"></span></div></div>
+<div class="card"><h2>Waiting queue (<span id="cnt">0</span>)</h2><ul class="q" id="qA"></ul><p class="mut">Use ▲ ▼ to change who goes next. The doctor sees the same order (open the Doctor tab in a second browser tab to see it sync live).</p></div></section>
+
+<section id="vD" class="grid hide"><div class="card"><h2>Current patient</h2><div id="cur"></div></div>
+<div class="card"><h2>Up next</h2><ul class="q" id="qD"></ul><div class="row" style="margin-top:12px"><button class="btn" id="call">Call next patient</button><span class="mut">Seen today: <b id="done">0</b></span></div></div></section>
+
+<section id="vH" class="hide"><div class="card"><h2>History (<span id="hn">0</span> shown) · saved permanently</h2>
+<div class="row"><input id="hs" placeholder="Search name / mobile / Regd. No" style="flex:1;min-width:180px"><input id="hd" type="date" style="width:auto"><button class="btn sec" id="hc2">Show recent</button></div>
+<ul class="q" id="hT" style="margin-top:10px"></ul><div class="row" style="margin-top:10px"><button class="btn sec" id="hmore">Load more</button></div></div>
+<div class="card" style="margin-top:14px" id="hv"><span class="mut">Tap View on a patient to see and copy their tables again. Re-add puts them in today's queue as a new visit.</span></div></section>
+</div>
+<script>
+/* Demo build: Firebase (Auth + Firestore) replaced by localStorage. Same UI, queue logic, IAP flags and Word-ready table copy as the production app. */
+var $=function(i){return document.getElementById(i)};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+var K="cq_state",KV="cq_visits",CUTOFF_HOUR=6;
+var dayNum=function(){var l=Date.now()-new Date().getTimezoneOffset()*6e4;return Math.floor((l-CUTOFF_HOUR*36e5)/864e5)};
+var blank=function(){return{queue:[],current:null,counter:0,done:0,day:dayNum()}};
+function ld(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){alert("Browser storage is unavailable.")}}
+function fresh(st){return st&&st.day===dayNum()?st:blank()}
+var S=fresh(ld(K,null)),hLimit=200,hData=[];
+function mutate(fn){var st=fresh(ld(K,null));fn(st);sv(K,st);S=st;render();return Promise.resolve(true)}
+var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fd(d){return String(d.getDate()).padStart(2,"0")+" "+MON[d.getMonth()]+" "+d.getFullYear()}
+function esc(t){return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function tbl(cols,rows,sz,bd){var tot=cols.reduce(function(a,b){return a+b},0)/20,plain=[];
+var h='<table cellspacing="0" cellpadding="0" width="'+Math.round(tot*4/3)+'" style="border-collapse:collapse;table-layout:fixed;width:'+tot+"pt;"+(bd?"border:2.25pt solid #F2F2F2;":"")+'"><colgroup>'+cols.map(function(c){return'<col width="'+Math.round(c/15)+'" style="width:'+c/20+'pt">'}).join("")+"</colgroup>";
+rows.forEach(function(r){var i=0,pr=[];h+='<tr style="height:10.2pt">';
+r.forEach(function(c){var s=c.s||1,w=0;for(var k=i;k<i+s;k++)w+=cols[k];w/=20;i+=s;
+var st="font-family:Arial,sans-serif;font-size:"+sz+"pt;margin:0;line-height:normal;font-weight:"+(c.b?"bold":"normal")+";"+(c.a?"text-align:"+c.a+";":"")+(c.c?"color:"+c.c+";":"");
+var t=c.h==null||c.h===""?"&nbsp;":c.h;
+h+='<td colspan="'+s+'" width="'+Math.round(w*4/3)+'" valign="top" style="width:'+w+"pt;white-space:nowrap;padding:0 "+(w<=26?"2pt":"5.4pt")+';border:.25pt solid #F2F2F2;vertical-align:top"><p style="'+st+'">'+t+"</p></td>";
+pr.push(String(c.h==null?"":c.h).replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<"))});
+h+="</tr>";plain.push(pr.join("\t"))});return{html:h+"</table>",plain:plain.join("\n")}}
+var RED="#FF0000";
+/* IAP 2015 BMI-for-age: 3rd percentile (a) and 23 adult-equivalent (b), ages 5.0-18.0 in half-years */
+var IAP={M:{a:[12.1,12.2,12.2,12.3,12.3,12.4,12.5,12.6,12.7,12.8,12.9,13.0,13.1,13.2,13.3,13.5,13.6,13.7,13.8,14.0,14.2,14.4,14.6,14.9,15.1,15.4,15.6],b:[15.7,15.8,16.0,16.1,16.3,16.5,16.7,17.0,17.3,17.6,18.0,18.3,18.7,19.1,19.5,19.8,20.2,20.5,20.8,21.1,21.4,21.7,22.0,22.4,22.6,22.9,23.2]},
+F:{a:[11.9,11.9,12.0,12.1,12.1,12.2,12.3,12.3,12.4,12.5,12.7,12.8,13.0,13.2,13.4,13.7,13.9,14.1,14.3,14.5,14.7,14.9,15.0,15.2,15.4,15.5,15.7],b:[15.5,15.7,15.9,16.1,16.4,16.6,16.9,17.2,17.6,18.0,18.4,18.8,19.3,19.8,20.2,20.7,21.1,21.5,21.8,22.0,22.3,22.4,22.6,22.8,22.9,23.1,23.2]}};
+function ageFrom(dob,age,au){if(dob){var b=new Date(dob+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);if(isNaN(b)||b>n)return null;
+var mm=(n.getFullYear()-b.getFullYear())*12+(n.getMonth()-b.getMonth());
+var addM=function(k){var t=new Date(b.getFullYear(),b.getMonth()+k,1),dim=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();t.setDate(Math.min(b.getDate(),dim));return t};
+var an=addM(mm);if(an>n){mm--;an=addM(mm)}
+var d=Math.round((n-an)/864e5),y=Math.floor(mm/12),m=mm%12;
+return{s:(y>0?y+"y ":"")+(y>0||m>0?m+"m ":"")+d+"d",y:y+m/12+d/365.25}}
+var a=parseFloat(age);if(isNaN(a)||a<0)return null;return au==="months"?{s:a+"m",y:a/12}:{s:a+"y",y:a}}
+function agetxt(p){return p.agestr||p.age+(p.au==="months"?"m":"y")}
+function ageY(p){if(p.agey!=null&&p.agey!=="")return Number(p.agey);var a=parseFloat(p.age);return isNaN(a)?NaN:p.au==="months"?a/12:a}
+function iapRed(p,bmi){var a=ageY(p),T=IAP[p.gender];if(!T||isNaN(a)||a<5||!bmi)return false;var i=Math.min(26,Math.max(0,Math.round((a-5)*2)));return bmi<T.a[i]||bmi>=T.b[i]}
+function visRed(v){v=(v||"").trim();if(!v)return false;var m=/^6\s*\/\s*(\d+)/.exec(v);return m?Number(m[1])>6:true}
+function regions(p){var E=esc,kid=p.mode==="child",bmi=0,bmiS="",ideal="",red=false;
+if(p.wt&&p.ht){var m=p.ht/100;bmi=p.wt/(m*m);bmiS=bmi.toFixed(2);
+if(kid)red=iapRed(p,bmi);else{ideal=(18.5*m*m).toFixed(1)+"-"+(25*m*m).toFixed(1);red=bmi<18.5||bmi>=25}}
+var rc=red?RED:undefined;
+var B=function(h,s){return{s:s||1,h:h,b:1}},V=function(h,s,a){return{s:s||1,h:E(h),a:a}};
+var U=function(l,v,u,vb,c){return[B(l),{s:2,h:E(v),a:"right",b:1,c:c},{s:2,h:u,b:1}]};
+var Z=function(l,a,b){return[{h:l,b:1,a:"right"},{h:E(a),a:"right",b:1},{h:"%",a:"right"},{h:E(b),a:"right",b:1},{h:"%"}]};
+var ageS=(p.agestr||(p.age?p.age+(p.au==="months"?"m":"y"):"")).replace(/ /g,"\u00A0");
+var head=tbl([1275,3895,967,1876,668,724,41,1051,660,719],[
+[B("Regd. No:"),V(p.reg+(p.last?" Last Visit on "+p.last:"")),B("Mobile:"),V(p.ph,2),B("Date:",2),V(p.date,3)],
+[B("Name:"),V(p.name,3),B("Age:"),V(ageS,3),B("Sex:"),V(p.gender)],
+[B("Address:"),V(p.addr,3),B("Religion:",2),V(p.rel,4)]],10,true);
+var zones=[[B("SpO<sub>2</sub>"),{s:2,h:"Room Air"},{s:2,h:"With O<sub>2</sub>"}],Z("RUL:",p.rul,p.rulo),Z("LUL:",p.lul,p.lulo),Z("RLL:",p.rll,p.rllo),Z("LLL:",p.lll,p.lllo)];
+var rows;
+if(kid){var mph="",f=parseFloat(p.hf),mo=parseFloat(p.hm);
+if(!isNaN(f)&&!isNaN(mo)&&(p.gender==="M"||p.gender==="F"))mph=((f+mo+(p.gender==="M"?13:-13))/2).toFixed(1);
+rows=[U("Weight:",p.wt,"kg",0,rc),U("Height:",p.ht,"cm"),U("MPH:",mph,"±8cm"),U("Head Circum:",p.hc,"cm"),U("Pulse Rate:",p.pulse,"per min",1),U("Resp Rate:",p.rr,"per min"),U("BP:",p.bp,"mm Hg",1),U("Temp:",p.tp,"F",1)].concat(zones,[U("Ht. of Father:",p.hf,"cm"),U("Ht. of Mother:",p.hm,"cm")])}
+else rows=[U("Weight:",p.wt,"kg",0,rc),U("Height:",p.ht,"cm"),U("BMI:",bmiS,"Kg/m<sup>2</sup>",1,rc),U("Ideal Weight:",ideal,"Kg"),U("Pulse Rate:",p.pulse,"per min"),U("Resp Rate:",p.rr,"per min"),U("Temp:",p.tp,"F"),U("BP:",p.bp,"mm Hg")].concat(zones,[U("Ht. of Father:",p.hf,"cm"),U("Ht. of Mother:",p.hm,"cm")]);
+var vit=tbl([1558,511,482,498,534],rows,9,false);
+var vc=function(v){return visRed(v)?RED:undefined};
+var vis=tbl([1417,992,1113],[[B("Vision:"),{h:"w/o glass",a:"center"},{h:"w glass",a:"center"}],[B("Right Eye:"),{h:E(p.re0),b:1,c:vc(p.re0)},{h:E(p.re1),b:1,c:vc(p.re1)}],[B("Left Eye:"),{h:E(p.le0),b:1,c:vc(p.le0)},{h:E(p.le1),b:1,c:vc(p.le1)}]],9,false);
+return[{t:"Header rows",o:head},{t:kid?"Vitals (child)":"Vitals",o:vit},{t:"Vision",o:vis}]}
+function copyHtml(o,pv,b){
+function ok(){var l=b.getAttribute("data-l");b.textContent="Copied ✓";setTimeout(function(){b.textContent=l},1500)}
+function fb(){var r=document.createRange();r.selectNode(pv.firstChild);var s=window.getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand("copy");ok()}catch(e){}s.removeAllRanges()}
+try{navigator.clipboard.write([new ClipboardItem({"text/html":new Blob(["<html><body><!--StartFragment-->"+o.html+"<!--EndFragment--></body></html>"],{type:"text/html"}),"text/plain":new Blob([o.plain],{type:"text/plain"})})]).then(ok,fb)}catch(e){fb()}}
+function block(R){var d=el("div","blk");d.appendChild(el("b","",R.t));var pv=el("div","pv");pv.innerHTML=R.o.html;d.appendChild(pv);
+var b=el("button","btn","Copy "+R.t.toLowerCase()+" (labels + values)");b.setAttribute("data-l",b.textContent);b.onclick=function(){copyHtml(R.o,pv,b)};d.appendChild(b);return d}
+function row(p,i,ctrl){var li=el("li",p.em?"em":"");li.appendChild(el("div","tok","#"+p.token));
+var inf=el("div","info");inf.appendChild(el("b","",p.name+" · "+agetxt(p)+" "+p.gender[0]));
+inf.appendChild(el("span","",(p.reg?"Regd. "+p.reg:"")+(p.reg&&p.ph?" · ":"")+(p.ph||"")));li.appendChild(inf);
+if(p.em)li.appendChild(el("span","badge","EMERGENCY"));
+if(ctrl){var u=el("button","ib","▲"),d=el("button","ib","▼"),x=el("button","ib","✕");
+u.onclick=function(){mv(p.token,-1)};d.onclick=function(){mv(p.token,1)};
+x.onclick=function(){if(confirm("Remove "+p.name+" from queue?"))mutate(function(st){st.queue=st.queue.filter(function(q){return q.token!==p.token})})};
+li.appendChild(u);li.appendChild(d);li.appendChild(x)}return li}
+function mv(t,d){mutate(function(st){var i=st.queue.findIndex(function(q){return q.token===t}),j=i+d;if(i<0||j<0||j>=st.queue.length)return;var x=st.queue[i];st.queue[i]=st.queue[j];st.queue[j]=x})}
+function dk(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function enqueue(p){return mutate(function(st){st.counter++;p.token=st.counter;if(p.em){var k=0;while(k<st.queue.length&&st.queue[k].em)k++;st.queue.splice(k,0,p)}else st.queue.push(p)}).then(function(ok){
+var V=ld(KV,[]);V.push(Object.assign({},p,{_id:Date.now()+"-"+Math.random().toString(36).slice(2,7),_t:Date.now(),dayKey:dk()}));sv(KV,V);hsub();return ok})}
+function hsub(){var d=$("hd").value,V=ld(KV,[]);if(d)V=V.filter(function(x){return x.dayKey===d});V.sort(function(a,b){return b._t-a._t});hData=d?V:V.slice(0,hLimit);renderHist()}
+function hrow(h){var li=el("li","");li.appendChild(el("div","tok","#"+h.token));var inf=el("div","info");
+inf.appendChild(el("b","",h.name+" · "+agetxt(h)+" "+h.gender[0]));
+inf.appendChild(el("span","",h.date+" · "+new Date(h._t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+(h.ph?" · "+h.ph:"")));li.appendChild(inf);
+function b(l,f){var x=el("button","btn sec",l);x.style.padding="4px 10px";x.onclick=f;li.appendChild(x)}
+b("View",function(){showHist(h)});
+b("Re-add",function(){if(!confirm("Add "+h.name+" to today's queue again?"))return;var p={};
+Object.keys(h).forEach(function(k){if(k[0]!=="_"&&k!=="dayKey"&&k!=="token")p[k]=h[k]});
+p.date=fd(new Date());p.em=false;var A=ageFrom(p.dob||"",p.age,p.au);if(A){p.agestr=A.s;p.agey=A.y}enqueue(p)});
+b("Delete",function(){if(confirm("Permanently delete "+h.name+" ("+h.date+") from history? This cannot be undone.")){sv(KV,ld(KV,[]).filter(function(x){return x._id!==h._id}));hsub()}});
+return li}
+function showHist(h){var hv=$("hv");hv.innerHTML="";hv.appendChild(el("h2","","Tables for #"+h.token+" · "+h.name+" · "+h.date));regions(h).forEach(function(R){hv.appendChild(block(R))});hv.scrollIntoView({behavior:"smooth"})}
+function renderHist(){var u=$("hT");u.innerHTML="";var t=$("hs").value.trim().toLowerCase();
+var L=hData.filter(function(h){return!t||[h.name,h.ph,h.reg].join(" ").toLowerCase().indexOf(t)>=0});
+$("hn").textContent=L.length;if(!L.length)u.appendChild(el("li","empty","No records found."));
+L.forEach(function(h){u.appendChild(hrow(h))});$("hmore").classList.toggle("hide",!!$("hd").value||hData.length<hLimit)}
+function render(){$("cnt").textContent=S.queue.length;$("done").textContent=S.done;
+var qa=$("qA");qa.innerHTML="";if(!S.queue.length)qa.appendChild(el("li","empty","No patients waiting."));S.queue.forEach(function(p,i){qa.appendChild(row(p,i,true))});
+var qd=$("qD");qd.innerHTML="";if(!S.queue.length)qd.appendChild(el("li","empty","Queue is empty."));
+S.queue.forEach(function(p,i){var li=row(p,i,false);if(i===0){li.querySelector(".tok").style.background="var(--ac)";li.querySelector(".tok").style.color="var(--acx)"}
+var cb=el("button","btn sec","Call");cb.style.padding="4px 10px";cb.onclick=function(){callTok(p.token)};li.appendChild(cb);qd.appendChild(li)});
+$("call").disabled=!S.queue.length;var c=$("cur");c.innerHTML="";
+if(!S.current){c.appendChild(el("p","empty","No patient called yet. Press “Call next patient”."));return}
+c.appendChild(el("p","big","#"+S.current.token+" · "+S.current.name));
+c.appendChild(el("div","mut","In Word: click the table's ✥ handle to select the old table, then Ctrl+V and choose Keep Source Formatting."));
+regions(S.current).forEach(function(R){c.appendChild(block(R))});
+var r=el("div","row"),dn=el("button","btn","Mark done");dn.onclick=function(){mutate(function(st){if(st.current){st.done++;st.current=null}})};r.appendChild(dn);c.appendChild(r)}
+$("add").onclick=function(){var g=function(i){return $(i).value.trim()};var A=ageFrom(g("dob"),g("age"),g("au"));
+if(!g("name")||!A){$("msg").textContent=g("name")?"Enter a valid date of birth, or the age.":"Name is required.";return}
+var p={dob:g("dob"),agestr:A.s,agey:A.y,date:fd(new Date()),last:g("last")?fd(new Date(g("last")+"T00:00:00")):"",reg:g("reg"),ph:g("ph"),name:g("name"),age:g("age"),gender:g("gender"),addr:g("addr"),rel:g("rel"),wt:g("wt"),ht:g("ht"),pulse:g("pulse"),rr:g("rr"),bp:g("bp"),rul:g("rul"),rulo:g("rulo"),lul:g("lul"),lulo:g("lulo"),rll:g("rll"),rllo:g("rllo"),lll:g("lll"),lllo:g("lllo"),hf:g("hf"),hm:g("hm"),mode:g("mode"),au:g("au"),hc:g("hc"),tp:g("tp"),re0:g("re0"),re1:g("re1"),le0:g("le0"),le1:g("le1"),em:$("em").checked};
+enqueue(p).then(function(ok){if(!ok)return;$("msg").textContent="Added as token #"+p.token;
+["reg","ph","name","dob","age","addr","rel","wt","ht","pulse","rr","bp","rul","rulo","lul","lulo","rll","rllo","lll","lllo","hf","hm","hc","tp","re0","re1","le0","le1","last"].forEach(function(i){$(i).value=""});$("em").checked=false})};
+function callTok(t){mutate(function(st){var i=t==null?0:st.queue.findIndex(function(p){return p.token===t});if(i<0||!st.queue.length)return;if(st.current)st.done++;st.current=st.queue.splice(i,1)[0]})}
+$("call").onclick=function(){callTok(null)};
+$("hs").oninput=renderHist;$("hd").onchange=hsub;$("hc2").onclick=function(){$("hd").value="";$("hs").value="";hsub()};$("hmore").onclick=function(){hLimit+=200;hsub()};
+function setMode(){var k=$("mode").value==="child";document.querySelectorAll(".kid").forEach(function(e){e.classList.toggle("hide",!k)})}
+$("mode").onchange=setMode;setMode();
+function tab(n){["A","D","H"].forEach(function(k){$("v"+k).classList.toggle("hide",k!==n);$("t"+k).classList.toggle("on",k===n)})}
+$("tA").onclick=function(){tab("A")};$("tD").onclick=function(){tab("D")};$("tH").onclick=function(){tab("H")};
+/* ---- synthetic demo data ---- */
+var DB={dob:"",last:"",reg:"",ph:"0000000000",addr:"Demo Street, Sample City",rel:"",pulse:"",rr:"",bp:"",rul:"",rulo:"",lul:"",lulo:"",rll:"",rllo:"",lll:"",lllo:"",hf:"",hm:"",hc:"",tp:"",re0:"",re1:"",le0:"",le1:"",em:false,au:"years",mode:"adult"};
+var DEMO=[{name:"Test Patient 01",age:"45",gender:"M",wt:"82",ht:"168",pulse:"78",rr:"16",bp:"142/90",tp:"98.6",re0:"6/6",le0:"6/9"},
+{name:"Test Patient 02",age:"32",gender:"F",wt:"55",ht:"160",pulse:"72",rr:"15",bp:"118/76",tp:"98.4",re0:"6/6",le0:"6/6"},
+{name:"Test Patient 03 (child)",mode:"child",age:"8",gender:"M",wt:"17",ht:"120",hc:"51",hf:"172",hm:"160",pulse:"90",rr:"22",tp:"99.1",re0:"6/6",le0:"6/6"},
+{name:"Test Patient 04 (child)",mode:"child",age:"12",gender:"F",wt:"52",ht:"150",hc:"54",hf:"175",hm:"158",pulse:"84",rr:"20",tp:"98.8",re0:"6/12",le0:"6/9"},
+{name:"Test Patient 05 (emergency)",age:"60",gender:"M",wt:"70",ht:"170",pulse:"112",rr:"26",bp:"90/60",tp:"101.4",rul:"88",rulo:"95",em:true},
+{name:"Test Patient 06 (infant)",mode:"child",age:"9",au:"months",gender:"F",wt:"8.2",ht:"71",hc:"44",pulse:"120",rr:"34",tp:"98.9"}];
+function seed(){DEMO.forEach(function(d){var p=Object.assign({},DB,d),A=ageFrom("",p.age,p.au);p.agestr=A.s;p.agey=A.y;p.date=fd(new Date());enqueue(p)})}
+$("demo").onclick=function(){if(confirm("Add 6 synthetic patients to the queue?"))seed()};
+$("rs").onclick=function(){if(confirm("Reset the demo? This clears the queue and history in this browser.")){localStorage.removeItem(K);localStorage.removeItem(KV);localStorage.removeItem("cq_seeded");S=blank();hsub();render();seed();localStorage.setItem("cq_seeded","1")}};
+window.addEventListener("storage",function(){S=fresh(ld(K,null));render();hsub()});
+render();hsub();
+if(!localStorage.getItem("cq_seeded")&&!S.queue.length&&!ld(KV,[]).length){seed();localStorage.setItem("cq_seeded","1")}
+</script></body></html>
